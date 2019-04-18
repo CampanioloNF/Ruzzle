@@ -4,6 +4,9 @@ public class Pos {
 	private int row;
 	private int col;
 
+	//Riassume la riga e la colonna in quella colonna
+	//Serve per definire i contenuti della griglia
+	
 	public Pos(int row, int col) {
 		super();
 		this.row = row;

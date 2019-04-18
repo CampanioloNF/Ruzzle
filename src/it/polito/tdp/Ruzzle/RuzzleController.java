@@ -6,6 +6,7 @@ package it.polito.tdp.Ruzzle;
 
 import java.net.URL;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 
@@ -16,13 +17,14 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextArea;
 
 public class RuzzleController {
 	
 	private Model model ; 
 	
 	private Map<Pos,Button> letters ;
-	
+     //mette in corrispondenza le poszioni con i button 	
 
     @FXML // ResourceBundle that was given to the FXMLLoader
     private ResourceBundle resources;
@@ -89,16 +91,68 @@ public class RuzzleController {
 
     @FXML // fx:id="txtStatus"
     private Label txtStatus; // Value injected by FXMLLoader
+    
+    @FXML
+    private TextArea txtResult;
 
     @FXML
     void handleProva(ActionEvent event) {
 
+    	String parola = this.txtParola.getText();
+    	
+    	if(parola.length()==0) {
+    		this.txtStatus.setText("ERRORE : Parola vuota");
+    		return;
+    		
+    	}
+    	
+       parola = parola.toUpperCase();
+       
+       if(!parola.matches("[A-Z]+")) {
+    	   this.txtStatus.setText("ERRORE : Caratteri non ammessi");
+    	   return;
+       }
+    	
+       List<Pos> percorso = model.trovaParola(parola);
+       
+     //  System.out.println(percorso);
+    	
+       
+       
+       for(Button b : letters.values()) {
+    	   b.setDefaultButton(false);
+       }
+       if(percorso!=null) {
+       
+    	   this.txtStatus.setText("Parola trovata"); 
+    	   
+       for(Pos p : percorso) {
+    		letters.get(p).setDefaultButton(true);
+    	}
+       }
+       
+       else
+    	   this.txtStatus.setText("Parola non trovata"); 
     }
     
     @FXML
     void handleReset(ActionEvent event) {
     	model.reset();
 
+    }
+    
+    @FXML
+    void handleRisolvi(ActionEvent event) {
+    	
+    	//chiedo al model di risolvere il Ruzzle
+    	
+    	List <String> tutte = model.trovaTutte();
+    	
+    	txtResult.clear();
+    	txtResult.appendText(String.format("Sono state trovate %d soluzioni:\n", tutte.size()));
+    	for(String s : tutte) {
+    		txtResult.appendText(s+"\n");
+    	}
     }
 
 
@@ -122,9 +176,17 @@ public class RuzzleController {
         assert let31 != null : "fx:id=\"let31\" was not injected: check your FXML file 'Ruzzle.fxml'.";
         assert let32 != null : "fx:id=\"let32\" was not injected: check your FXML file 'Ruzzle.fxml'.";
         assert let33 != null : "fx:id=\"let33\" was not injected: check your FXML file 'Ruzzle.fxml'.";
+        assert txtResult != null : "fx:id=\"txtResult\" was not injected: check your FXML file 'Ruzzle.fxml'.";
         assert txtStatus != null : "fx:id=\"txtStatus\" was not injected: check your FXML file 'Ruzzle.fxml'.";
 
     }
+    /*
+     * Costruisce dentro il controller una mappa le cui posizioni sono cablate
+     * Mapping posizioni e oggetti button 
+     * 
+     * Per tutte le poszioni della Bord, vado a prendere il bottone in quella posizione, attraverso la mappa, 
+     * e il testo lo collego alla proprietà stringa di quella posizione
+    */
     
     public void setModel(Model m) {
     	this.model = m ;
@@ -154,8 +216,8 @@ public class RuzzleController {
     	for(Pos cell: m.getBoard().getPositions()) {
     		this.letters.get(cell).textProperty().bind(m.getBoard().getCellValueProperty(cell));
     	}
-    	
-    	this.txtStatus.textProperty().bind(m.statusTextProperty());
+    	                      //binding scemo
+    	// this.txtStatus.textProperty().bind(m.statusTextProperty());
     	
     }
 }
